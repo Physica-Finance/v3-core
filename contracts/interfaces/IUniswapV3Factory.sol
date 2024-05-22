@@ -9,16 +9,6 @@ interface IUniswapV3Factory {
     /// @param newOwner The owner after the owner was changed
     event OwnerChanged(address indexed oldOwner, address indexed newOwner);
 
-    /// @notice Emitted when the Protocol Fee Collector of the factory is changed
-    /// @param oldProtocolFeeCollector The ProtocolFeeCollector before the Protocol Fee Collector was changed
-    /// @param newProtocolFeeCollector The ProtocolFeeCollector after the Protocol Fee Collector was changed
-    event ProtocolFeeCollectorChanged(address oldProtocolFeeCollector, address newProtocolFeeCollector);
-
-    /// @notice Emitted when the Pool Creation Fee is changed
-    /// @param oldPoolCreationFee The fee before the pool creation fee was changed
-    /// @param newPoolCreationFee The fee after the pool creation fee was changed
-    event PoolCreationFeeChanged(uint256 oldPoolCreationFee, uint256 newPoolCreationFee);
-
     /// @notice Emitted when a pool is created
     /// @param token0 The first token of the pool by address sort order
     /// @param token1 The second token of the pool by address sort order

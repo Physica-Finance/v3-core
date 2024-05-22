@@ -29,10 +29,7 @@ contract UniswapV3Factory is IUniswapV3Factory, UniswapV3PoolDeployer, NoDelegat
         emit OwnerChanged(address(0), msg.sender);
 
         protocolFeeCollector = msg.sender;
-        emit ProtocolFeeCollectorChanged(address(0), msg.sender);
-
         poolCreationFee = 1024 ether;
-        emit PoolCreationFeeChanged(0, poolCreationFee);
 
         feeAmountTickSpacing[500] = 10;
         emit FeeAmountEnabled(500, 10);
@@ -71,13 +68,11 @@ contract UniswapV3Factory is IUniswapV3Factory, UniswapV3PoolDeployer, NoDelegat
 
     function setProtocolFeeCollector(address newProtocolFeeCollector) external override {
         require(msg.sender == owner);
-        emit ProtocolFeeCollectorChanged(protocolFeeCollector, newProtocolFeeCollector);
         protocolFeeCollector = newProtocolFeeCollector;
     }
 
     function setPoolCreationFee(uint256 newPoolCreationFee) external override {
         require(msg.sender == owner);
-        emit PoolCreationFeeChanged(poolCreationFee, newPoolCreationFee);
         poolCreationFee = newPoolCreationFee;
     }
 
@@ -88,7 +83,7 @@ contract UniswapV3Factory is IUniswapV3Factory, UniswapV3PoolDeployer, NoDelegat
         address feeCollector = payable(protocolFeeCollector);
         bool success;
         (success, ) = feeCollector.call{value: sendAmount}("");
-        require(success, "Transaction Unsuccessful");
+        require(success);
     }
 
     /// @inheritdoc IUniswapV3Factory
