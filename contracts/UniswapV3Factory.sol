@@ -15,6 +15,11 @@ contract UniswapV3Factory is IUniswapV3Factory, UniswapV3PoolDeployer, NoDelegat
     address public override owner;
 
     /// @inheritdoc IUniswapV3Factory
+    address public override protocolFeeCollector;
+
+    uint256 public override poolCreationFee;
+
+    /// @inheritdoc IUniswapV3Factory
     mapping(uint24 => int24) public override feeAmountTickSpacing;
     /// @inheritdoc IUniswapV3Factory
     mapping(address => mapping(address => mapping(uint24 => address))) public override getPool;
@@ -22,6 +27,12 @@ contract UniswapV3Factory is IUniswapV3Factory, UniswapV3PoolDeployer, NoDelegat
     constructor() {
         owner = msg.sender;
         emit OwnerChanged(address(0), msg.sender);
+
+        protocolFeeCollector = msg.sender;
+        emit ProtocolFeeCollectorChanged(address(0), msg.sender);
+
+        poolCreationFee = 1024 ether;
+        emit PoolCreationFeeChanged(0, poolCreationFee);
 
         feeAmountTickSpacing[500] = 10;
         emit FeeAmountEnabled(500, 10);
@@ -36,7 +47,8 @@ contract UniswapV3Factory is IUniswapV3Factory, UniswapV3PoolDeployer, NoDelegat
         address tokenA,
         address tokenB,
         uint24 fee
-    ) external override noDelegateCall returns (address pool) {
+    ) external override noDelegateCall payable returns (address pool) {
+        require(msg.value == poolCreationFee);
         require(tokenA != tokenB);
         (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
         require(token0 != address(0));
@@ -55,6 +67,28 @@ contract UniswapV3Factory is IUniswapV3Factory, UniswapV3PoolDeployer, NoDelegat
         require(msg.sender == owner);
         emit OwnerChanged(owner, _owner);
         owner = _owner;
+    }
+
+    function setProtocolFeeCollector(address newProtocolFeeCollector) external override {
+        require(msg.sender == owner);
+        emit ProtocolFeeCollectorChanged(protocolFeeCollector, newProtocolFeeCollector);
+        protocolFeeCollector = newProtocolFeeCollector;
+    }
+
+    function setPoolCreationFee(uint256 newPoolCreationFee) external override {
+        require(msg.sender == owner);
+        emit PoolCreationFeeChanged(poolCreationFee, newPoolCreationFee);
+        poolCreationFee = newPoolCreationFee;
+    }
+
+    function withdrawPoolCreationFee() external override {
+        require(msg.sender == protocolFeeCollector);
+        uint256 sendAmount = address(this).balance;
+
+        address feeCollector = payable(protocolFeeCollector);
+        bool success;
+        (success, ) = feeCollector.call{value: sendAmount}("");
+        require(success, "Transaction Unsuccessful");
     }
 
     /// @inheritdoc IUniswapV3Factory

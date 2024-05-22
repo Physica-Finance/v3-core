@@ -9,6 +9,16 @@ interface IUniswapV3Factory {
     /// @param newOwner The owner after the owner was changed
     event OwnerChanged(address indexed oldOwner, address indexed newOwner);
 
+    /// @notice Emitted when the Protocol Fee Collector of the factory is changed
+    /// @param oldProtocolFeeCollector The ProtocolFeeCollector before the Protocol Fee Collector was changed
+    /// @param newProtocolFeeCollector The ProtocolFeeCollector after the Protocol Fee Collector was changed
+    event ProtocolFeeCollectorChanged(address oldProtocolFeeCollector, address newProtocolFeeCollector);
+
+    /// @notice Emitted when the Pool Creation Fee is changed
+    /// @param oldPoolCreationFee The fee before the pool creation fee was changed
+    /// @param newPoolCreationFee The fee after the pool creation fee was changed
+    event PoolCreationFeeChanged(uint256 oldPoolCreationFee, uint256 newPoolCreationFee);
+
     /// @notice Emitted when a pool is created
     /// @param token0 The first token of the pool by address sort order
     /// @param token1 The second token of the pool by address sort order
@@ -32,6 +42,16 @@ interface IUniswapV3Factory {
     /// @dev Can be changed by the current owner via setOwner
     /// @return The address of the factory owner
     function owner() external view returns (address);
+
+    /// @notice Returns the current Protocol Fee Collector of the factory
+    /// @dev Can be changed by the current owner via setProtocolFeeCollector
+    /// @return The address of the Protocol Fee Collector
+    function protocolFeeCollector() external view returns (address);
+
+    /// @notice Returns the current pool creation fee of the factory
+    /// @dev Can be changed by the current owner via setPoolCreationFee
+    /// @return The amount of the pool creation fee
+    function poolCreationFee() external view returns (uint256);
 
     /// @notice Returns the tick spacing for a given fee amount, if enabled, or 0 if not enabled
     /// @dev A fee amount can never be removed, so this value should be hard coded or cached in the calling context
@@ -63,12 +83,24 @@ interface IUniswapV3Factory {
         address tokenA,
         address tokenB,
         uint24 fee
-    ) external returns (address pool);
+    ) external payable returns (address pool);
 
     /// @notice Updates the owner of the factory
     /// @dev Must be called by the current owner
     /// @param _owner The new owner of the factory
     function setOwner(address _owner) external;
+
+    /// @notice Updates the Protocol Fee Collector of the factory
+    /// @dev Must be called by the current owner
+    /// @param newProtocolFeeCollector The new Protocol Fee Collector of the factory
+    function setProtocolFeeCollector(address newProtocolFeeCollector) external;
+
+    /// @notice Sets a pool creation fee
+    /// @param newPoolCreationFee The fee amount to create a Pool, denominated in wei (i.e. 1e-18)
+    function setPoolCreationFee(uint256 newPoolCreationFee) external;
+
+    /// @notice Withdraws the accumulated pool creation fees
+    function withdrawPoolCreationFee() external;
 
     /// @notice Enables a fee amount with the given tickSpacing
     /// @dev Fee amounts may never be removed once enabled

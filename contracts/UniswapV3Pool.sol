@@ -114,6 +114,11 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
         _;
     }
 
+    modifier onlyProtocolFeeCollector() {
+        require(msg.sender == IUniswapV3Factory(factory).protocolFeeCollector());
+        _;
+    }
+
     constructor() {
         int24 _tickSpacing;
         (factory, token0, token1, fee, _tickSpacing) = IUniswapV3PoolDeployer(msg.sender).parameters();
@@ -281,7 +286,7 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
             observationIndex: 0,
             observationCardinality: cardinality,
             observationCardinalityNext: cardinalityNext,
-            feeProtocol: 0,
+            feeProtocol: 7 + (7 << 4),
             unlocked: true
         });
 
@@ -849,7 +854,7 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
         address recipient,
         uint128 amount0Requested,
         uint128 amount1Requested
-    ) external override lock onlyFactoryOwner returns (uint128 amount0, uint128 amount1) {
+    ) external override lock onlyProtocolFeeCollector returns (uint128 amount0, uint128 amount1) {
         amount0 = amount0Requested > protocolFees.token0 ? protocolFees.token0 : amount0Requested;
         amount1 = amount1Requested > protocolFees.token1 ? protocolFees.token1 : amount1Requested;
 
